@@ -4,8 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+requests = "*"
+flask = "*"
+tensorflow = "==1.13.1"
+transformers = "==3.5.1"
 
 [dev-packages]
+autopep8 = "*"
 
 [requires]
 python_version = "3.6"

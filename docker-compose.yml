@@ -1,0 +1,50 @@
+version: "3.9"  # optional since v1.27.0
+services:
+  tf-server:
+    image: "tensorflow/serving"
+    restart: always
+    ports: 
+      - "8501:8501"
+    volumes:
+      - "./saved_model:/models/ner_32k"
+    networks: 
+      - bert-net
+    environment:
+      MODEL_NAME: ner_32k
+    logging:
+      driver: json-file
+      options:
+        max-size: 200k
+        max-file: "10"
+  
+  api-server:
+    build:
+      context: "./"
+      dockerfile: "./docker/server.Dockerfile"
+    restart: always
+    ports: 
+      - "12345:5000"
+    depends_on: 
+      - "tf-server"
+    volumes:
+      - "./saved_model:/models/ner_32k"
+    networks: 
+      - bert-net
+    environment:
+      LC_ALL: "C.UTF-8"
+      LANG: "C.UTF-8"
+      FLASK_APP: "server.py"
+      FLASK_ENV: "development"
+      FLASK_RUN_HOST: "0.0.0.0"
+      FLASK_RUN_PORT: "5000"
+      TF_SERVER_HOST: "tf-server"
+      MECAB_DICT_PATH: "/usr/lib/x86_64-linux-gnu/mecab/dic/mecab-ipadic-neologd"
+    logging:
+      driver: json-file
+      options:
+        max-size: 200k
+        max-file: "10"
+
+networks:
+  bert-net:
+    external: false
